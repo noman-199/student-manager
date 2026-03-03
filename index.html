@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Student Manager</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      padding-top: 50px;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      width: 400px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    input {
+      width: 70%;
+      padding: 8px;
+    }
+
+    button {
+      padding: 8px 12px;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+    }
+
+    .add-btn {
+      background: #4CAF50;
+      color: white;
+    }
+
+    .delete-btn {
+      background: #e74c3c;
+      color: white;
+      margin-left: 10px;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    li {
+      background: #f1f1f1;
+      margin-bottom: 8px;
+      padding: 8px;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>📚 Student Manager</h1>
+
+  <input type="text" id="studentName" placeholder="Enter student name">
+  <button class="add-btn" onclick="addStudent()">Add</button>
+
+  <ul id="studentList"></ul>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+  const supabaseUrl = 'https://srtpipgkdmsezwvknccp.supabase.co'
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNydHBpcGdrZG1zZXp3dmtuY2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0OTE1NzAsImV4cCI6MjA4ODA2NzU3MH0.BDPI-zF2Z7XomZNYtpDY-mY_Nltk4BOnIl-quyzJpk8'
+
+  const supabase = createClient(supabaseUrl, supabaseKey)
+
+  async function loadStudents() {
+    const { data, error } = await supabase
+      .from('students')
+      .select('*')
+
+    const list = document.getElementById('studentList')
+    list.innerHTML = ''
+
+    data.forEach(student => {
+      const li = document.createElement('li')
+      li.innerHTML = `
+        ${student.name}
+        <button class="delete-btn" onclick="deleteStudent(${student.id})">Delete</button>
+      `
+      list.appendChild(li)
+    })
+  }
+
+  async function addStudent() {
+    const nameInput = document.getElementById('studentName')
+    const name = nameInput.value
+
+    if (!name) return alert("Enter a name")
+
+    await supabase.from('students').insert([{ name }])
+
+    nameInput.value = ''
+    loadStudents()
+  }
+
+  async function deleteStudent(id) {
+    await supabase.from('students').delete().eq('id', id)
+    loadStudents()
+  }
+
+  loadStudents()
+
+  window.addStudent = addStudent
+  window.deleteStudent = deleteStudent
+</script>
+
+</body>
+</html>
