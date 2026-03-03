@@ -2,6 +2,7 @@
 <html>
 <head>
   <title>Student Manager</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -73,6 +74,9 @@
   <button class="add-btn" onclick="addStudent()">Add</button>
 
   <ul id="studentList"></ul>
+
+  <br><br>
+  <button onclick="downloadPDF()">📄 Download PDF</button>
 </div>
 
 <script type="module">
@@ -101,6 +105,27 @@
     })
   }
 
+  async function downloadPDF() {
+    const { data } = await supabase
+      .from('students')
+      .select('*')
+
+    const { jsPDF } = window.jspdf
+    const doc = new jsPDF()
+
+    doc.setFontSize(16)
+    doc.text("Student List", 20, 20)
+
+    let y = 30
+
+    data.forEach((student, index) => {
+      doc.text(`${index + 1}. ${student.name}`, 20, y)
+      y += 10
+    })
+
+    doc.save("students.pdf")
+  }
+
   async function addStudent() {
     const nameInput = document.getElementById('studentName')
     const name = nameInput.value
@@ -122,6 +147,7 @@
 
   window.addStudent = addStudent
   window.deleteStudent = deleteStudent
+  window.downloadPDF = downloadPDF
 </script>
 
 </body>
